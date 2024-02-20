@@ -22,6 +22,7 @@ JSExportAs(launch, +(instancetype)launch
            : (NSString *)appName withOptionals
            : (NSDictionary<NSString *, id> *)optionals);
 + (instancetype)focused;
++ (instancetype)at:(CGPoint)point;
 + (NSArray<PHApp *> *)all;
 
 #pragma mark - Properties

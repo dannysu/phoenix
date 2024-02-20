@@ -73,6 +73,30 @@ static NSString *const PHAppForceOptionKey = @"force";
     return [[self alloc] initWithApp:[NSWorkspace sharedWorkspace].frontmostApplication];
 }
 
++ (instancetype)at:(CGPoint)point {
+    NSPoint screenPosition = NSMakePoint(point.x, point.y);
+    NSInteger windowNumber = [NSWindow windowNumberAtPoint:screenPosition belowWindowWithWindowNumber:0];
+    if (windowNumber <= 0) {
+        NSLog(@"Error: App.at() didn't find window number at (%f, %f)", point.x, point.y);
+        return nil;
+    }
+
+    CGWindowID cgWindowID = (CGWindowID)windowNumber;
+    CFArrayRef windowList = CGWindowListCopyWindowInfo(kCGWindowListOptionIncludingWindow, cgWindowID);
+    if (!windowList || CFArrayGetCount(windowList) <= 0) {
+        NSLog(@"Error: App.at() got no window info");
+        return nil;
+    }
+
+    pid_t pid;
+    CFDictionaryRef windowInfo = CFArrayGetValueAtIndex(windowList, 0);
+    CFNumberRef pidNumber = CFDictionaryGetValue(windowInfo, kCGWindowOwnerPID);
+    CFNumberGetValue(pidNumber, kCFNumberIntType, &pid);
+
+    NSRunningApplication *app = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+    return [[self alloc] initWithApp:app];
+}
+
 + (NSArray<PHApp *> *)all {
     NSMutableArray<PHApp *> *apps = [NSMutableArray array];
 
